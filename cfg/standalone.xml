@@ -151,7 +151,7 @@
                 </datasource>
                 <xa-datasource jndi-name="java:/jdbc/pdsDataSource" pool-name="ssd" enabled="true" use-ccm="false">
                     <xa-datasource-property name="ServerName">
-                        ${env.MYSQL_SERVICE_HOST}
+                        ${env.POSTGRESQL_SERVICE_HOST}
                     </xa-datasource-property>
                     <xa-datasource-property name="PortNumber">
                         ${env.POSTGRESQL_SERVICE_PORT}

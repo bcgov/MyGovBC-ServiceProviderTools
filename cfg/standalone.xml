@@ -159,8 +159,8 @@
                         <max-pool-size>50</max-pool-size>
                     </pool>
                     <security>
-                        <user-name>${env.POSTGRESQL_USER}</user-name>
-                        <password>${env.POSTGRESQL_PASSWORD}</password>
+                        <user-name>${env.POSTGRESQL_SSD_USER}</user-name>
+                        <password>${env.POSTGRESQL_SSD_PASSWORD}</password>
                     </security>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
@@ -178,8 +178,8 @@
                         <max-pool-size>50</max-pool-size>
                     </pool>
                     <security>
-                        <user-name>${env.POSTGRESQL_USER}</user-name>
-                        <password>${env.POSTGRESQL_PASSWORD}</password>
+                        <user-name>${env.POSTGRESQL_ORBEON_USER}</user-name>
+                        <password>${env.POSTGRESQL_ORBEON_PASSWORD}</password>
                     </security>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>

@@ -149,25 +149,14 @@
                         <password>sa</password>
                     </security>
                 </datasource>
-                <xa-datasource jndi-name="java:/jdbc/pdsDataSource" pool-name="ssd" enabled="true" use-ccm="false">
-                    <xa-datasource-property name="ServerName">
-                        ${env.POSTGRESQL_SERVICE_HOST}
-                    </xa-datasource-property>
-                    <xa-datasource-property name="PortNumber">
-                        ${env.POSTGRESQL_SERVICE_PORT}
-                    </xa-datasource-property>
-                    <xa-datasource-property name="DatabaseName">
-                        ${env.POSTGRESQL_DATABASE}
-                    </xa-datasource-property>
+                
+                <datasource jndi-name="java:jboss/datasources/pdsDataSource" pool-name="ssd" enabled="true" use-java-context="true">
+                    <connection-url>jdbc:postgresql://${env.POSTGRESQL_SERVICE_HOST}:${env.POSTGRESQL_SERVICE_PORT}/${env.POSTGRESQL_DATABASE}</connection-url>
                     <driver>postgresql</driver>
-                    <xa-pool>
+                    <pool>
                         <min-pool-size>1</min-pool-size>
                         <max-pool-size>50</max-pool-size>
-                        <is-same-rm-override>false</is-same-rm-override>
-                        <interleaving>false</interleaving>
-                        <pad-xid>false</pad-xid>
-                        <wrap-xa-resource>false</wrap-xa-resource>
-                    </xa-pool>
+                    </pool>
                     <security>
                         <user-name>${env.POSTGRESQL_USER}</user-name>
                         <password>${env.POSTGRESQL_PASSWORD}</password>
@@ -176,34 +165,17 @@
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
                     </validation>
-                    <timeout>
-                        <set-tx-query-timeout>true</set-tx-query-timeout>
-                        <idle-timeout-minutes>1</idle-timeout-minutes>
-                        <query-timeout>30</query-timeout>
-                    </timeout>
                     <statement>
                         <share-prepared-statements>false</share-prepared-statements>
                     </statement>
-                </xa-datasource>
-                <xa-datasource jndi-name="java:/jdbc/orbeonPG" pool-name="orbeon" enabled="true" use-ccm="false">
-                    <xa-datasource-property name="ServerName">
-                        ${env.POSTGRESQL_SERVICE_HOST}
-                    </xa-datasource-property>
-                    <xa-datasource-property name="PortNumber">
-                        ${env.POSTGRESQL_SERVICE_PORT}
-                    </xa-datasource-property>
-                    <xa-datasource-property name="DatabaseName">
-                        ${env.POSTGRESQL_DATABASE}
-                    </xa-datasource-property>
+                </datasource>
+                <datasource jndi-name="java:jboss/datasources/orbeonPG" pool-name="orbeon" enabled="true" use-java-context="true">
+                    <connection-url>jdbc:postgresql://${env.POSTGRESQL_SERVICE_HOST}:${env.POSTGRESQL_SERVICE_PORT}/${env.POSTGRESQL_DATABASE}</connection-url>
                     <driver>postgresql</driver>
-                    <xa-pool>
+                    <pool>
                         <min-pool-size>1</min-pool-size>
                         <max-pool-size>50</max-pool-size>
-                        <is-same-rm-override>false</is-same-rm-override>
-                        <interleaving>false</interleaving>
-                        <pad-xid>false</pad-xid>
-                        <wrap-xa-resource>false</wrap-xa-resource>
-                    </xa-pool>
+                    </pool>
                     <security>
                         <user-name>${env.POSTGRESQL_USER}</user-name>
                         <password>${env.POSTGRESQL_PASSWORD}</password>
@@ -212,15 +184,10 @@
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
                     </validation>
-                    <timeout>
-                        <set-tx-query-timeout>true</set-tx-query-timeout>
-                        <idle-timeout-minutes>1</idle-timeout-minutes>
-                        <query-timeout>30</query-timeout>
-                    </timeout>
                     <statement>
                         <share-prepared-statements>false</share-prepared-statements>
                     </statement>
-                </xa-datasource>
+                </datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>

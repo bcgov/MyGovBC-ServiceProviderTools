@@ -35,6 +35,7 @@
         <property name="org.apache.catalina.connector.URI_ENCODING" value="UTF-8"/>
         <property name="org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING" value="true"/>
         <property name="ssdConfiguration" value="${env.SSD_CONFIGURATION}"/>
+        <property name="orbeonFilterConfiguration" value="${env.ORBEON_CONFIGURATION}"/>
         <property name="jboss.as.management.blocking.timeout" value="9999"/>
     </system-properties>
 

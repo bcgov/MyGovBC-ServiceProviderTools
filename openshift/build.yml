@@ -1,0 +1,147 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: provider-tools-build
+  annotations:
+    tags: instant-app,jenkins
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: build-and-deploy-to-dev-pipeline
+      name: build-and-deploy-to-dev-pipeline
+    name: build-and-deploy-to-dev-pipeline
+  spec:
+    nodeSelector: null
+    output: {}
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        uri: https://github.com/bcgov/MyGovBC-ServiceProviderTools
+      type: Git
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfile: |
+          node {
+            stage('build') {
+              echo "Building..."
+              openshiftBuild bldCfg: 'mygovbc-sp-app', showBuildLogs: 'true'
+            }
+            stage('deploy-to-dev') {
+              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'dev', srcStream: 'mygovbc-sp-app', srcTag: 'latest', verbose: 'true'
+              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'latest', destinationNamespace: 'gcpe-mygovbc-service-provider-dev', srcStream: 'mygovbc-sp-app', srcTag: 'latest', verbose: 'true'
+            }
+          }
+      type: JenkinsPipeline
+    triggers:
+    - github:
+        secret: DgN4ynvw8F3cNrsSDdxTG43JDMBMwSRgd7Up7EIA
+      type: GitHub
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: deploy-to-prod-pipeline
+      name: deploy-to-prod-pipeline
+    name: deploy-to-prod-pipeline
+  spec:
+    nodeSelector: null
+    output: {}
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        uri: https://github.com/bcgov/MyGovBC-ServiceProviderTools
+      type: Git
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfile: |
+          node {
+            stage('deploy-to-prod') {
+              def defaultTargetProj = env.PROJECT_NAME.substring(0,env.PROJECT_NAME.toLowerCase().lastIndexOf('-tools')) + '-prod'
+              def params = input (message: 'Input Parameters', parameters: [
+                              [$class: 'StringParameterDefinition', defaultValue: 'test', description: 'tag (ImageStreamTag type) or full SHA-1 hash code (ImageStreamImage type) of the source image', name: 'Source Image Tag or Id'],
+                              [$class: 'StringParameterDefinition', defaultValue: defaultTargetProj, description: 'target project to deploy image stream to', name: 'Target Project']
+                           ])             
+              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'prod', srcStream: 'mygovbc-sp-app', srcTag: params['Source Image Tag or Id']
+              // openshiftTag destStream: 'mygovbc-sp-app', destinationNamespace: params['Target Project'], destTag: 'latest', srcStream: 'mygovbc-sp-app', srcTag: params['Source Image Tag or Id']
+            }
+          }
+      type: JenkinsPipeline
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: deploy-to-test-pipeline
+      name: deploy-to-test-pipeline
+    name: deploy-to-test-pipeline
+  spec:
+    nodeSelector: null
+    output: {}
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        uri: https://github.com/bcgov/MyGovBC-ServiceProviderTools
+      type: Git
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfile: |
+          node {
+            stage('deploy-to-test') {
+              def defaultTargetProj = env.PROJECT_NAME.substring(0,env.PROJECT_NAME.toLowerCase().lastIndexOf('-tools')) + '-test'
+              def params = input (message: 'Input Parameters', parameters: [
+                              [$class: 'StringParameterDefinition', defaultValue: 'dev', description: 'tag (ImageStreamTag type) or full SHA-1 hash code (ImageStreamImage type) of the source image', name: 'Source Image Tag or Id'],
+                              [$class: 'StringParameterDefinition', defaultValue: defaultTargetProj, description: 'target project to deploy image stream to', name: 'Target Project']
+                           ])
+              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'test', srcStream: 'mygovbc-sp-app', srcTag: params['Source Image Tag or Id']
+              // openshiftTag destStream: 'mygovbc-sp-app', destinationNamespace: params['Target Project'], destTag: 'latest', srcStream: 'mygovbc-sp-app', srcTag: params['Source Image Tag or Id']
+            }
+          }
+      type: JenkinsPipeline
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    labels:
+      app: mygovbc-sp-app
+    name: mygovbc-sp-app
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: mygovbc-sp-app:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        uri: https://github.com/bcgov/MyGovBC-ServiceProviderTools.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: wildfly:10.1
+          namespace: openshift
+      type: Source
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange

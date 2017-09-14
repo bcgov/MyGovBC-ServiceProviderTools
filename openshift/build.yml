@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Template
 metadata:
   creationTimestamp: null
-  name: provider-tools-build
+  name: mygovbc-service-provider-tools-build
   annotations:
     tags: instant-app,jenkins
 objects:
@@ -30,12 +30,16 @@ objects:
         jenkinsfile: |
           node {
             stage('build') {
-              echo "Building..."
+              echo "Building mygovbc-sp-app..."
               openshiftBuild bldCfg: 'mygovbc-sp-app', showBuildLogs: 'true'
+              echo "Building nginx-reverse-proxy..."
+              openshiftBuild bldCfg: 'nginx-reverse-proxy', showBuildLogs: 'true'
             }
             stage('deploy-to-dev') {
-              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'dev', srcStream: 'mygovbc-sp-app', srcTag: 'latest', verbose: 'true'
-              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'latest', destinationNamespace: 'gcpe-mygovbc-service-provider-dev', srcStream: 'mygovbc-sp-app', srcTag: 'latest', verbose: 'true'
+              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'dev', srcStream: 'mygovbc-sp-app', srcTag: 'latest'
+              openshiftTag destStream: 'mygovbc-sp-app', destTag: 'latest', destinationNamespace: 'gcpe-mygovbc-service-provider-dev', srcStream: 'mygovbc-sp-app', srcTag: 'latest'
+              openshiftTag destStream: 'nginx-reverse-proxy', destTag: 'dev', srcStream: 'nginx-reverse-proxy', srcTag: 'latest'
+              openshiftTag destStream: 'nginx-reverse-proxy', destTag: 'latest', destinationNamespace: 'gcpe-mygovbc-service-provider-dev', srcStream: 'nginx-reverse-proxy', srcTag: 'latest'
             }
           }
       type: JenkinsPipeline
@@ -145,3 +149,36 @@ objects:
     - imageChange: {}
       type: ImageChange
     - type: ConfigChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: nginx-reverse-proxy
+    labels:
+      app: nginx-reverse-proxy
+  spec:
+    triggers:
+      - type: ConfigChange
+      - type: ImageChange
+    runPolicy: Serial
+    source:
+      type: Git
+      git:
+        uri: 'https://github.com/bcgov/MyGovBC-ServiceProviderTools'
+      contextDir: /openshift/nginx
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          namespace: openshift
+          name: 'bcgov-s2i-nginx:latest'
+        env:
+          - name: NGINX_PROXY_URL
+            value: 'http://mygovbc-sp-app:8080'
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'nginx-reverse-proxy:latest'
+    resources: {}
+    postCommit: {}
+    nodeSelector: null
